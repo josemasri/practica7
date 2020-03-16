@@ -9,14 +9,19 @@
 int main(int argc, char **argv)
 {
     // Iniciando programa de MPI
+    int nodoInicial=0;
     MPI_Init(&argc, &argv);
     // Manejador del grupo global
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); /*Para obtener el ID*/
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); /*Para obtener el número de procesos*/
+    MPI_Barrier(MPI_COMM_WORLD);
+    printf("%d\n",world_size);
+    MPI_Barrier(MPI_COMM_WORLD);
+
     int arrayMaestros[world_size];
-    if (world_rank == 0)
+    if (world_rank == nodoInicial)
     {
         // Inicializo el arreglo en -1
         for (int i = 0; i < world_size; i++)
@@ -33,6 +38,7 @@ int main(int argc, char **argv)
         MPI_Request request;
         MPI_Status status;
         int mensaje;
+        //mensaje de ok
         MPI_Irecv(&mensaje, 1, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &request);
         
         
@@ -44,7 +50,7 @@ int main(int argc, char **argv)
             // Para ser el master
             MPI_Send(&arrayMaestros[0], world_size, MPI_INT, destino, 1, MPI_COMM_WORLD);
             // Espero retroalimentación para ver si le llego
-            sleep(10);
+            for(int k=0;k<100000000;k++);
             // Esperando para ver si responde
             int flag = 0;
             // Probando si llego mensaje
@@ -75,7 +81,8 @@ int main(int argc, char **argv)
         MPI_Wait(&request, &status);
         printf("Soy %d y recibí el mensaje de %d\n", world_rank, status.MPI_SOURCE);
         for (int j = 0; j < world_size; j++)
-            printf("%d\n", arrayMaestros[j]);
+            printf("%d ", arrayMaestros[j]);
+        printf("\n");
         arrayMaestros[world_rank] = world_rank;
         // Le contesto de recibido
         int message = 1;
@@ -124,13 +131,15 @@ int main(int argc, char **argv)
         MPI_Wait(&request, &status);
         printf("Soy %d y recibí el mensaje de %d\n", world_rank, status.MPI_SOURCE);
         for (int j = 0; j < world_size; j++)
-            printf("%d\n", arrayMaestros[j]);
+            printf("%d ", arrayMaestros[j]);
+        printf("\n");
         arrayMaestros[world_rank] = world_rank;
         // Le contesto de recibido
         int message = 1;
         MPI_Send(&message, 1, MPI_INT, status.MPI_SOURCE, 2, MPI_COMM_WORLD);
         // Escojer padre
     }
+    //printf("leader: %d\n");
 
     MPI_Finalize();
     return 0;
@@ -146,7 +155,8 @@ void send_array(int world_size, int world_rank, int tag1, int tag2)
     MPI_Wait(&request, &status);
     printf("Soy %d y recibí el mensaje de %d\n", world_rank, status.MPI_SOURCE);
     for (int j = 0; j < world_size; j++)
-        printf("%d\n", arrayMaestros[j]);
+        printf("%d ", arrayMaestros[j]);
+    printf("\n");
     arrayMaestros[world_rank] = world_rank;
     // Le contesto de recibido
     int message = 1;
