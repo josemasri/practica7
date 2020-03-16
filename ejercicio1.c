@@ -2,7 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <mpi.h>
-#define N 10000
+#define N 10
 
 int main(int argc, char **argv)
 {
@@ -46,16 +46,12 @@ int main(int argc, char **argv)
             MPI_Send(&clock, 1, MPI_DOUBLE, destination, 1, MPI_COMM_WORLD);
         }
 
-        MPI_Barrier(MPI_COMM_WORLD);
-        for (int j = 0; j < 100000; j += 2)
-        {
-            j--;
-        }
 
+        
         MPI_Test(&request[i], &flag, MPI_STATUS_IGNORE);
+        MPI_Barrier(MPI_COMM_WORLD);
         if (flag)
         {
-            printf("El proceso %d recibó mensaje\n", world_rank);
             if (clock < clock_message)
             {
                 // El mensaje remoto ocurrio despues
@@ -66,6 +62,7 @@ int main(int argc, char **argv)
                 // Mi mensaje ocurrio despues
                 clock++;
             }
+            printf("El proceso %d recibó mensaje en tiempo %d\n", world_rank, clock);
         }
     }
     printf("Soy el proceso %d y mi reloj terminó en %d\n", world_rank, clock);

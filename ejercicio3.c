@@ -5,6 +5,7 @@
 #include <unistd.h>
 #define N 100000
 
+
 int main(int argc, char **argv)
 {
     // Iniciando programa de MPI
@@ -14,10 +15,9 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); /*Para obtener el ID*/
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); /*Para obtener el número de procesos*/
-
+    int arrayMaestros[world_size];
     if (world_rank == 0)
     {
-        int arrayMaestros[world_size];
         // Inicializo el arreglo en -1
         for (int i = 0; i < world_size; i++)
         {
@@ -26,12 +26,17 @@ int main(int argc, char **argv)
             else
                 arrayMaestros[i] = -1;
         }
+
+
         int recibido = 0;
         int destino = world_rank + 1;
         MPI_Request request;
         MPI_Status status;
         int mensaje;
         MPI_Irecv(&mensaje, 1, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &request);
+        
+        
+
         while (!recibido)
         {
             // Envio un mensaje con mi ID
@@ -58,11 +63,11 @@ int main(int argc, char **argv)
                 // printf("Ningún proceso recibió mi mensaje, vuelvo a empezar\n");
             }
         }
-        printf("EL proceso %d recibio mi mensaje", status.MPI_SOURCE);
+        printf("EL proceso %d recibio mi mensaje\n", status.MPI_SOURCE);
     }
     else if (world_rank < world_size - 1)
+        
     {
-        int arrayMaestros[world_size];
         // Recibo mensaje de algún nodo para comenzar
         MPI_Request request;
         MPI_Status status;
@@ -112,7 +117,6 @@ int main(int argc, char **argv)
     else
     {
         // Último proceso
-        int arrayMaestros[world_size];
         // Recibo mensaje de algún nodo para comenzar
         MPI_Request request;
         MPI_Status status;
@@ -125,7 +129,7 @@ int main(int argc, char **argv)
         // Le contesto de recibido
         int message = 1;
         MPI_Send(&message, 1, MPI_INT, status.MPI_SOURCE, 2, MPI_COMM_WORLD);
-        // Envío al proceso 0
+        // Escojer padre
     }
 
     MPI_Finalize();
