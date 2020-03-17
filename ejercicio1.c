@@ -2,7 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <mpi.h>
-#define N 10
+#define N 30
 
 int main(int argc, char **argv)
 {
@@ -28,13 +28,15 @@ int main(int argc, char **argv)
         // Generando numero aleatorio
         p = (double)rand() / (double)RAND_MAX;
         // Incrtementando reloj
-        if (p < 0.01)
+        if (p < 0.05){
+            printf("[%d] evento con contador %d\n",world_rank,clock);
             clock++;
+        }
         // Recibiendo mensaje de forma asincrona
         MPI_Irecv(&clock_message, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &request[i]);
         // Evaluando si se envía mensaje
         q = (double)rand() / (double)RAND_MAX;
-        if (q < 0.3)
+        if (q < 0.1)
         {
             // Enviaré mensaje con mi reloj
             int destination;
@@ -62,11 +64,11 @@ int main(int argc, char **argv)
                 // Mi mensaje ocurrio despues
                 clock++;
             }
-            printf("El proceso %d recibó mensaje en tiempo %d\n", world_rank, clock);
+            printf("[%d] recepción de mensaje %d\n", world_rank, clock);
         }
     }
-    printf("Soy el proceso %d y mi reloj terminó en %d\n", world_rank, clock);
-
+    MPI_Barrier(MPI_COMM_WORLD);
+    printf("[%d] reloj: %d\n", world_rank, clock);
     MPI_Finalize();
     return 0;
 }
