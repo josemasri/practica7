@@ -5,8 +5,7 @@
 #include <unistd.h>
 #define N 100000
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
     // Iniciando programa de MPI
     MPI_Init(&argc, &argv);
     // Manejador del grupo global
@@ -43,8 +42,7 @@ int main(int argc, char **argv)
 
     // Contestando con mi iRank
     // A procesos menores
-    for (int i = 0; i < world_rank; i++)
-    {
+    for (int i = 0; i < world_rank; i++){
         int flag = 0;
         // Probando si llego mensaje
         MPI_Test(&request[i], &flag, MPI_STATUS_IGNORE);
@@ -58,8 +56,7 @@ int main(int argc, char **argv)
 
     // Revisando mensajes
     // De procesos mayores
-    for (int i = 0; i < world_size - world_rank - 1; i++)
-    {
+    for (int i = 0; i < world_size - world_rank - 1; i++){
         int flag = 0;
         // Probando si llego mensaje
         MPI_Test(&request2[i], &flag, MPI_STATUS_IGNORE);

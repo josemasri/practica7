@@ -23,11 +23,12 @@ int main(int argc, char **argv)
   MPI_Request request;
   MPI_Status status;
   int arrayMaestros[world_size];
+  int isDone=-1;
   int lider=-1;
   int message;
   for(int i=0;i<world_size;i++) arrayMaestros[i]=-1;
   
-    while(lider==-1){
+    while(isDone==-1){
 
     int destino=(world_rank+1)%world_size;
     int recibido = 0;
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
           // Ya puedo seguir
           //printf("nodo %d respondio a %d\n ",status.MPI_SOURCE, world_rank);
 
-          lider=message;
+          isDone=message;
           recibido = 1;
         }else{
           printf("nodo %d no respondio a %d\n ",destino, world_rank);
@@ -75,32 +76,28 @@ int main(int argc, char **argv)
         }
       }
       if (world_rank==nodoInicial){
-       printf("%d \n",world_rank);
-        
         MPI_Irecv(arrayMaestros, world_size, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &request);
         MPI_Wait(&request, &status);
-        printf("%d \n",status.MPI_SOURCE);
 
         for (int j = 0; j < world_size; j++){
           if(arrayMaestros[j]==world_rank){
-            lider=world_rank;
+            isDone=world_rank;
           }
         }
         MPI_Send(&message, 1, MPI_INT, status.MPI_SOURCE, 2, MPI_COMM_WORLD);
-        printf("nodo %d respondio a %d\n ", world_rank,status.MPI_SOURCE);
       }
       else {
-        lider=-2;
-        int message=lider;
+        isDone=-2;
+        int message=isDone;
         
         MPI_Send(&message, 1, MPI_INT, status.MPI_SOURCE, 2, MPI_COMM_WORLD);
     }
     }
 
     if(world_rank==nodoInicial){
+      lider=world_rank;
       for(int j=world_rank+1;j<world_size;j++){
           if(arrayMaestros[j]!=-1){
-            printf("%d \n",j);
             int destino=j;
             MPI_Send(&lider, 1, MPI_INT, destino, 3, MPI_COMM_WORLD);
             MPI_Send(arrayMaestros, world_size, MPI_INT, destino, 4, MPI_COMM_WORLD);
@@ -113,7 +110,6 @@ int main(int argc, char **argv)
       MPI_Recv(&lider, 1, MPI_INT, MPI_ANY_SOURCE, 3, MPI_COMM_WORLD, &status);
       for(int j=world_rank+1;j<world_size;j++){
           if(arrayMaestros[j]!=-1){
-            printf("%d \n",j);
             int destino=j;
             MPI_Send(&lider, 1, MPI_INT, destino, 3, MPI_COMM_WORLD);
             MPI_Send(arrayMaestros, world_size, MPI_INT, destino, 4, MPI_COMM_WORLD);
